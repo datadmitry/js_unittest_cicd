@@ -8,8 +8,13 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write  # Даем права на запись
+    
     steps:
     - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}  # Используем токен с правами
     
     - uses: actions/setup-node@v4
       with:
@@ -19,18 +24,28 @@ jobs:
     
     - run: node test.js
     
-    - run: |
-        # Создаем CHANGELOG.md
-        echo "# Changelog" > CHANGELOG.md
+    - name: Создать CHANGELOG.md
+      run: |
+        echo "# История изменений" > CHANGELOG.md
         echo "" >> CHANGELOG.md
-        echo "Создан: $(date)" >> CHANGELOG.md
+        echo "## Дата: $(date '+%Y-%m-%d %H:%M:%S')" >> CHANGELOG.md
         echo "" >> CHANGELOG.md
-        git log --oneline >> CHANGELOG.md
+        echo "### Последние коммиты:" >> CHANGELOG.md
+        echo "\`\`\`" >> CHANGELOG.md
+        git log --oneline -10 >> CHANGELOG.md
+        echo "\`\`\`" >> CHANGELOG.md
     
-    - run: |
-        # Коммитим CHANGELOG.md
-        git config user.email "actions@github.com"
-        git config user.name "GitHub Actions"
+    - name: Коммитить CHANGELOG.md
+      run: |
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config user.name "github-actions[bot]"
+        
         git add CHANGELOG.md
-        git commit -m "Update changelog" || echo "Нет изменений"
-        git push || echo "Не удалось запушить"
+        
+        # Создаем коммит только если есть изменения
+        if ! git diff --staged --quiet; then
+          git commit -m "📝 Автоматическое обновление changelog"
+          git push
+        else
+          echo "Нет изменений для коммита"
+        fi
