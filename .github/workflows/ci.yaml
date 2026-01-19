@@ -1,42 +1,61 @@
-name: Школьный CI/CD
+name: Run Tests and Generate Changelog
 
-# Когда запускать: при каждом новом коде
-on: [push]
+on:
+  push:
+    branches: [ main, master ]
 
 jobs:
-  # Задача: Проверить код
-  check-code:
+  test-and-changelog:
     runs-on: ubuntu-latest
     
     steps:
-    # Шаг 1: Скачать код
-    - name: Скачать код
+    # Шаг 1: Скачать код с ВСЕЙ историей
+    - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Важно! Полная история коммитов
     
     # Шаг 2: Установить Node.js
-    - name: Установить Node.js
+    - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
     
-    # Шаг 3: Установить библиотеки
-    - name: Установить библиотеки
-      run: npm install
+    # Шаг 3: Установить зависимости
+    - name: Install dependencies
+      run: npm ci
     
     # Шаг 4: Запустить тесты
-    - name: Проверить тесты
+    - name: Run tests
       run: npm test
     
-    # Шаг 5: Создать отчет о коммитах
-    - name: Записать кто что сделал
+    # Шаг 5: Создать changelog
+    - name: Generate changelog
+      run: npm run generate-changelog
+    
+    # Шаг 6: Показать что создалось
+    - name: Show changelog file
       run: |
-        echo "# Кто что сделал" > changes.md
-        echo "" >> changes.md
-        echo "| Кто | Когда | Что сделал |" >> changes.md
-        echo "|-----|-------|------------|" >> changes.md
-        
-        # Берем 5 последних коммитов
-        git log -5 --pretty=format:"| %an | %ad | %s |" --date=short >> changes.md
-        
-        echo "" >> changes.md
-        echo "Отчет создан автоматически!" >> changes.md
+        echo "=== Содержимое changes.md ==="
+        cat changes.md || echo "Файл не найден"
+        echo "=== Конец файла ==="
+    
+    # Шаг 7: Сохранить changelog как артефакт
+    - name: Upload changelog
+      uses: actions/upload-artifact@v3
+      with:
+        name: changelog
+        path: changes.md
+    
+    # Шаг 8: Закоммитить changelog обратно (опционально)
+    - name: Commit and push changelog
+      run: |
+        if [ -f "changes.md" ]; then
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add changes.md
+          git commit -m "Auto-update changelog" || echo "Нет изменений для коммита"
+          git push || echo "Не удалось запушить"
+        else
+          echo "Файл changes.md не найден"
+        fi

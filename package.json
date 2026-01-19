@@ -1,9 +1,10 @@
 {
-  "name": "school-counter-app",
+  "name": "js_unittest_cicd",
   "version": "1.0.0",
   "scripts": {
     "start": "node server.js",
-    "test": "node test.js"
+    "test": "node test.js",
+    "generate-changelog": "node scripts/generate-changelog.js"
   },
   "dependencies": {
     "express": "^4.18.2"
