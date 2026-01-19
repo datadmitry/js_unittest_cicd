@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 
 // Счетчик (переменная, которая будет меняться)
-let counter = 0;
+let counter = 10;
 
 // 1. Главная страница - показывает счетчик
 app.get('/', (req, res) => {
