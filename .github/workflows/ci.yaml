@@ -8,13 +8,10 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     
-    permissions:
-      contents: write  # Даем права на запись
-    
     steps:
     - uses: actions/checkout@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}  # Используем токен с правами
+        fetch-depth: 0  # Важно! Получаем ВСЮ историю коммитов
     
     - uses: actions/setup-node@v4
       with:
@@ -24,28 +21,39 @@ jobs:
     
     - run: node test.js
     
-    - name: Создать CHANGELOG.md
+    - name: Создать CHANGELOG.md с полной историей
       run: |
-        echo "# История изменений" > CHANGELOG.md
+        echo "# История изменений проекта" > CHANGELOG.md
         echo "" >> CHANGELOG.md
-        echo "## Дата: $(date '+%Y-%m-%d %H:%M:%S')" >> CHANGELOG.md
+        echo "## Последнее обновление: $(date '+%Y-%m-%d %H:%M:%S')" >> CHANGELOG.md
         echo "" >> CHANGELOG.md
-        echo "### Последние коммиты:" >> CHANGELOG.md
-        echo "\`\`\`" >> CHANGELOG.md
-        git log --oneline -10 >> CHANGELOG.md
-        echo "\`\`\`" >> CHANGELOG.md
+        echo "### Все коммиты в репозитории:" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        
+        # Получаем ВСЕ коммиты
+        echo "| Хэш | Дата | Автор | Сообщение |" >> CHANGELOG.md
+        echo "|------|------|-------|-----------|" >> CHANGELOG.md
+        
+        # Форматируем коммиты в таблицу
+        git log --pretty=format:"| %h | %ad | %an | %s |" --date=short >> CHANGELOG.md
+        
+        echo "" >> CHANGELOG.md
+        echo "---" >> CHANGELOG.md
+        echo "*Файл обновляется автоматически при каждом коммите*" >> CHANGELOG.md
+        
+        echo "=== Файл CHANGELOG.md создан ==="
+        echo "Количество строк:"
+        wc -l CHANGELOG.md
     
-    - name: Коммитить CHANGELOG.md
+    - name: Показать первые 15 строк changelog
       run: |
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config user.name "github-actions[bot]"
-        
-        git add CHANGELOG.md
-        
-        # Создаем коммит только если есть изменения
-        if ! git diff --staged --quiet; then
-          git commit -m "📝 Автоматическое обновление changelog"
-          git push
-        else
-          echo "Нет изменений для коммита"
-        fi
+        echo "=== Начало CHANGELOG.md ==="
+        head -15 CHANGELOG.md
+        echo "=== ... ==="
+    
+    - name: Сохранить CHANGELOG.md как артефакт
+      uses: actions/upload-artifact@v4
+      with:
+        name: changelog
+        path: CHANGELOG.md
+        retention-days: 30
