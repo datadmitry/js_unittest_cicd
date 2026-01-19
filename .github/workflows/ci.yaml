@@ -1,0 +1,42 @@
+name: Школьный CI/CD
+
+# Когда запускать: при каждом новом коде
+on: [push]
+
+jobs:
+  # Задача: Проверить код
+  check-code:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Шаг 1: Скачать код
+    - name: Скачать код
+      uses: actions/checkout@v3
+    
+    # Шаг 2: Установить Node.js
+    - name: Установить Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    # Шаг 3: Установить библиотеки
+    - name: Установить библиотеки
+      run: npm install
+    
+    # Шаг 4: Запустить тесты
+    - name: Проверить тесты
+      run: npm test
+    
+    # Шаг 5: Создать отчет о коммитах
+    - name: Записать кто что сделал
+      run: |
+        echo "# Кто что сделал" > changes.md
+        echo "" >> changes.md
+        echo "| Кто | Когда | Что сделал |" >> changes.md
+        echo "|-----|-------|------------|" >> changes.md
+        
+        # Берем 5 последних коммитов
+        git log -5 --pretty=format:"| %an | %ad | %s |" --date=short >> changes.md
+        
+        echo "" >> changes.md
+        echo "Отчет создан автоматически!" >> changes.md
