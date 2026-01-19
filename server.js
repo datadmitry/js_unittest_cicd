@@ -39,8 +39,8 @@ app.post('/decrement', (req, res) => {
   res.json({ count: counter });
 });
 
-// Запускаем сервер на порту 3000
+// Запускаем сервер на порту 3001
 app.listen(3000, () => {
   console.log('Сервер запущен!');
-  console.log('Открой в браузере: http://localhost:3000');
+  console.log('Открой в браузере: http://localhost:3001');
 });
