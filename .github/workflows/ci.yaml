@@ -1,4 +1,4 @@
-name: Простой CI/CD
+name: CI/CD с changelog
 
 on:
   push:
@@ -7,11 +7,14 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Важно! Получаем ВСЮ историю коммитов
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - uses: actions/setup-node@v4
       with:
@@ -21,39 +24,22 @@ jobs:
     
     - run: node test.js
     
-    - name: Создать CHANGELOG.md с полной историей
+    - name: Create and commit CHANGELOG.md
       run: |
-        echo "# История изменений проекта" > CHANGELOG.md
+        # Создаем changelog
+        echo "# Changelog" > CHANGELOG.md
         echo "" >> CHANGELOG.md
-        echo "## Последнее обновление: $(date '+%Y-%m-%d %H:%M:%S')" >> CHANGELOG.md
+        echo "Updated: $(date)" >> CHANGELOG.md
         echo "" >> CHANGELOG.md
-        echo "### Все коммиты в репозитории:" >> CHANGELOG.md
-        echo "" >> CHANGELOG.md
+        echo "| Commit | Date | Author | Message |" >> CHANGELOG.md
+        echo "|--------|------|--------|---------|" >> CHANGELOG.md
         
-        # Получаем ВСЕ коммиты
-        echo "| Хэш | Дата | Автор | Сообщение |" >> CHANGELOG.md
-        echo "|------|------|-------|-----------|" >> CHANGELOG.md
-        
-        # Форматируем коммиты в таблицу
         git log --pretty=format:"| %h | %ad | %an | %s |" --date=short >> CHANGELOG.md
         
-        echo "" >> CHANGELOG.md
-        echo "---" >> CHANGELOG.md
-        echo "*Файл обновляется автоматически при каждом коммите*" >> CHANGELOG.md
+        # Коммитим
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git config user.name "github-actions[bot]"
         
-        echo "=== Файл CHANGELOG.md создан ==="
-        echo "Количество строк:"
-        wc -l CHANGELOG.md
-    
-    - name: Показать первые 15 строк changelog
-      run: |
-        echo "=== Начало CHANGELOG.md ==="
-        head -15 CHANGELOG.md
-        echo "=== ... ==="
-    
-    - name: Сохранить CHANGELOG.md как артефакт
-      uses: actions/upload-artifact@v4
-      with:
-        name: changelog
-        path: CHANGELOG.md
-        retention-days: 30
+        git add CHANGELOG.md
+        git commit -m "Update CHANGELOG.md" 2>/dev/null || echo "No changes to commit"
+        git push || echo "Nothing to push"
