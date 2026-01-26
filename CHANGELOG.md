@@ -1,9 +1,12 @@
 # Changelog
 
-Updated: Mon Jan 19 14:41:48 UTC 2026
+Updated: Mon Jan 26 11:23:44 UTC 2026
 
 | Commit | Date | Author | Message |
 |--------|------|--------|---------|
+| ff3db28 | 2026-01-26 | datadmitry | Merge pull request #1 from datadmitry/claude/add-unit-tests-ci-Uo4Mh |
+| 4e6d89a | 2026-01-26 | Claude | Добавление unit-тестов с Jest и CI/CD для автоматического обновления README |
+| 367af61 | 2026-01-19 | github-actions[bot] | Update CHANGELOG.md |
 | f5f9663 | 2026-01-19 | barsukovaksenya | теперь все коммиты, включая новый коммит, должны отображаться в CHANGELOG.md |
 | 3b4b244 | 2026-01-19 | barsukovaksenya | Merge branch 'main' of https://github.com/datadmitry/js_unittest_cicd |
 | a92dba4 | 2026-01-19 | barsukovaksenya | в changelog.md теперь сохраняются все последние коммиты |
