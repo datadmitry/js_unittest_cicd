@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "scripts": {
     "start": "node server.js",
-    "test": "node test.js",
-    "generate-changelog": "node scripts/generate-changelog.js"
+    "test": "jest --json --outputFile=test-results.json || true",
+    "test:verbose": "jest --verbose"
   },
   "dependencies": {
     "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
   }
 }

@@ -5,6 +5,16 @@ const app = express();
 // Счетчик (переменная, которая будет меняться)
 let counter = 10;
 
+// Функция для сброса счетчика (для тестов)
+function resetCounter(value = 10) {
+  counter = value;
+}
+
+// Функция для получения значения счетчика (для тестов)
+function getCounter() {
+  return counter;
+}
+
 // 1. Главная страница - показывает счетчик
 app.get('/', (req, res) => {
   res.send(`<h1>Счетчик: ${counter}</h1>
@@ -39,8 +49,13 @@ app.post('/decrement', (req, res) => {
   res.json({ count: counter });
 });
 
-// Запускаем сервер на порту 3001
-app.listen(3000, () => {
-  console.log('Сервер запущен!');
-  console.log('Открой в браузере: http://localhost:3001');
-});
+// Запускаем сервер только если файл запущен напрямую
+if (require.main === module) {
+  app.listen(3000, () => {
+    console.log('Сервер запущен!');
+    console.log('Открой в браузере: http://localhost:3000');
+  });
+}
+
+// Экспортируем для тестов
+module.exports = { app, resetCounter, getCounter };
